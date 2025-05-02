@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -16,12 +15,29 @@ const ProgressSummary: React.FC<ProgressSummaryProps> = ({
   completedDays, 
   streak 
 }) => {
+  // Save progress data to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const progressData = {
+          currentDay,
+          completedDays,
+          streak,
+          lastUpdated: new Date().toISOString()
+        };
+        localStorage.setItem('progressData', JSON.stringify(progressData));
+      } catch (error) {
+        console.error('Error saving progress data:', error);
+      }
+    }
+  }, [currentDay, completedDays, streak]);
+
   const progressPercentage = (completedDays.length / 21) * 100;
   const daysLeft = 21 - currentDay + 1;
   
   // Calculate completion rate (percentage of possible days completed)
   const completionRate = currentDay > 1 
-    ? Math.round((completedDays.length / (currentDay - 1)) * 100) 
+    ? Math.round((completedDays.length / (currentDay )) * 100) 
     : 100;
 
   return (

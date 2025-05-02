@@ -16,6 +16,32 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
 const getInitialData = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      const savedData = localStorage.getItem('progressData');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        // Only use saved data if it's from today
+        const lastUpdated = new Date(parsedData.lastUpdated);
+        const today = new Date();
+        if (lastUpdated.toDateString() === today.toDateString()) {
+          return {
+            currentDay: parsedData.currentDay,
+            completedDays: parsedData.completedDays,
+            streak: parsedData.streak,
+            goals: [
+              { id: 1, text: "Complete all 21 days of the challenge." },
+              { id: 2, text: "Run 5k three times a week." }
+            ]
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error loading saved progress:', error);
+    }
+  }
+  
+  // Default data if no saved data exists or it's from a different day
   return {
     currentDay: 5,
     completedDays: [1, 2, 4],
@@ -71,13 +97,11 @@ const Index = () => {
     const newGoal = {
       id: Date.now(),
       text: goalText
-    
     };
     setUserData(prev => ({
       ...prev,
       goals: [...prev.goals, newGoal]
     }));
-  
   };
 
   const handleLogout = async () => {

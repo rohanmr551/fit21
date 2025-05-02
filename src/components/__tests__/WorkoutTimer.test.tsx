@@ -15,45 +15,47 @@ describe('WorkoutTimer', () => {
   it('renders initial state correctly', () => {
     render(<WorkoutTimer />);
     expect(screen.getByText('00:00')).toBeInTheDocument();
-    expect(screen.getByText('Start')).toBeInTheDocument();
+    expect(screen.getByText(/Target:.*30:00/)).toBeInTheDocument();
+    
+    // Get buttons by their SVG icons
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(2);
   });
 
   it('starts and stops timer correctly', () => {
     render(<WorkoutTimer />);
-    const startButton = screen.getByText('Start');
-    
+    const buttons = screen.getAllByRole('button');
+    const playButton = buttons[0]; // First button is play/pause
+
     // Start timer
-    fireEvent.click(startButton);
-    expect(screen.getByText('Stop')).toBeInTheDocument();
-    
-    // Advance time by 1 second
+    fireEvent.click(playButton);
     act(() => {
       vi.advanceTimersByTime(1000);
     });
     expect(screen.getByText('00:01')).toBeInTheDocument();
-    
+
     // Stop timer
-    const stopButton = screen.getByText('Stop');
-    fireEvent.click(stopButton);
-    expect(screen.getByText('Start')).toBeInTheDocument();
+    fireEvent.click(playButton);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.getByText('00:01')).toBeInTheDocument();
   });
 
   it('resets timer correctly', () => {
     render(<WorkoutTimer />);
-    const startButton = screen.getByText('Start');
-    
+    const buttons = screen.getAllByRole('button');
+    const playButton = buttons[0]; // First button is play/pause
+    const resetButton = buttons[1]; // Second button is reset
+
     // Start timer and let it run for 5 seconds
-    fireEvent.click(startButton);
+    fireEvent.click(playButton);
     act(() => {
       vi.advanceTimersByTime(5000);
     });
-    
-    // Stop timer
-    const stopButton = screen.getByText('Stop');
-    fireEvent.click(stopButton);
-    
+    expect(screen.getByText('00:05')).toBeInTheDocument();
+
     // Reset timer
-    const resetButton = screen.getByText('Reset');
     fireEvent.click(resetButton);
     expect(screen.getByText('00:00')).toBeInTheDocument();
   });

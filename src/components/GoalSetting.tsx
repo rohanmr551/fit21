@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,30 @@ const GoalSetting: React.FC<GoalSettingProps> = ({
 }) => {
   const { toast } = useToast();
   const [newGoal, setNewGoal] = useState("");
-  const [goals, setGoals] = useState<Goal[]>(existingGoals);
+  const [goals, setGoals] = useState<Goal[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedGoals = localStorage.getItem('fitnessGoals');
+      if (savedGoals) {
+        try {
+          return JSON.parse(savedGoals);
+        } catch (error) {
+          console.error('Error parsing saved goals:', error);
+          return existingGoals;
+        }
+      }
+    }
+    return existingGoals;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('fitnessGoals', JSON.stringify(goals));
+      } catch (error) {
+        console.error('Error saving goals:', error);
+      }
+    }
+  }, [goals]);
 
   const handleAddGoal = async () => {
     if (!newGoal.trim()) {

@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dumbbell, Sparkles } from 'lucide-react';
@@ -43,15 +42,39 @@ const workoutSuggestions = [
 ];
 
 const WorkoutSuggestion: React.FC = () => {
-  const [workout, setWorkout] = useState(workoutSuggestions[0]);
+  const [workout, setWorkout] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedWorkout = localStorage.getItem('currentWorkout');
+      if (savedWorkout) {
+        try {
+          return JSON.parse(savedWorkout);
+        } catch (error) {
+          console.error('Error parsing saved workout:', error);
+          return workoutSuggestions[0];
+        }
+      }
+    }
+    return workoutSuggestions[0];
+  });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('currentWorkout', JSON.stringify(workout));
+      } catch (error) {
+        console.error('Error saving workout:', error);
+      }
+    }
+  }, [workout]);
 
   const getNewWorkout = () => {
     setLoading(true);
     // Simulate AI processing time
     setTimeout(() => {
       const randomIndex = Math.floor(Math.random() * workoutSuggestions.length);
-      setWorkout(workoutSuggestions[randomIndex]);
+      const newWorkout = workoutSuggestions[randomIndex];
+      setWorkout(newWorkout);
       setLoading(false);
     }, 1000);
   };
